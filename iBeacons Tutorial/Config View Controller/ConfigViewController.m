@@ -73,7 +73,8 @@
         
     }else if (peripheral.state == CBPeripheralManagerStateUnsupported){
         
-        self.statusLabel.text = @"Unsupported";
+        self.statusLabel.text = @"DEVICE is not support";
+         
     }
     
 }
