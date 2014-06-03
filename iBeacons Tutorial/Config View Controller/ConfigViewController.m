@@ -14,7 +14,10 @@
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view.
-   }
+    
+    self.uuidText.text = @"23542266-18D1-4FE4-B4A1-23F8195B9D39";
+
+}
 
 
 
