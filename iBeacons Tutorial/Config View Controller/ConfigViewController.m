@@ -39,6 +39,7 @@
 - (IBAction)transmitBeaconBtnClick:(UIButton *)sender {
      NSLog(@"Click transmit button");
     
+    
     // Get the beacon data to advertise
     self.beaconPeripheralData = [self.beaconRegion peripheralDataWithMeasuredPower:nil];
     
@@ -58,7 +59,7 @@
     if (peripheral.state == CBPeripheralManagerStatePoweredOn) {
         NSLog(@"Powered On: boardcasting....");
         
-        self.statusLabel.text = @"Boardcasting NOW...";
+        self.statusLabel.text = @"Boardcasting ON...";
         
         // Start broadcasting
         [self.peripheralManager startAdvertising:self.beaconPeripheralData];
