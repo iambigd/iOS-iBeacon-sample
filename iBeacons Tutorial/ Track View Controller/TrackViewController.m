@@ -8,6 +8,9 @@
 
 - (void)viewDidLoad
 {
+    
+     NSLog(@"init tracker in viewDidLoad");
+    
     [super viewDidLoad];
 	
     // Do any additional setup after loading the view.
@@ -21,7 +24,7 @@
     
     //testing Without Entering or Exiting the Region
     //manual to call didStartMonitoringForRegion
-    [self locationManager:self.locationManager didStartMonitoringForRegion:self.beaconRegion];
+//    [self locationManager:self.locationManager didStartMonitoringForRegion:self.beaconRegion];
 }
 
 - (void)didReceiveMemoryWarning
@@ -35,19 +38,22 @@
     
     NSLog(@"init Beacon");
 
-    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:@"23542266-18D1-4FE4-B4A1-23F8195B9D39"];
-    self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"com.devfright.myRegion"];
+    //This beacon's UUID is from Beacons vender
+    NSUUID *uuid = [[NSUUID alloc] initWithUUIDString:@"E2C56DB5-DFFB-48D2-B060-D0F5A71096E0"];
     
-    self.beaconRegion.notifyOnEntry = YES;
-    self.beaconRegion.notifyOnExit = YES;
-    self.beaconRegion.notifyEntryStateOnDisplay = YES;
+    //Create the beacon region to be monitored.
+    self.beaconRegion = [[CLBeaconRegion alloc] initWithProximityUUID:uuid identifier:@"x-beacon"];
     
+//    self.beaconRegion.notifyOnEntry = YES;
+//    self.beaconRegion.notifyOnExit = YES;
+//    self.beaconRegion.notifyEntryStateOnDisplay = YES;
+    
+    //Create the beacon region to be monitored.
     //Tell location manager to start monitoring for the beacon region
+    //it will trigger 'didStartMonitoringForRegion' delegate
     [self.locationManager startMonitoringForRegion:self.beaconRegion];
     
-    
-//    [self.locationManager requestStateForRegion:self.beaconRegion];
-    
+     NSLog(@"init Beacon done");
 }
 
 /*
@@ -61,52 +67,88 @@
     NSLog(@"requestStateForRegion");
 }
 
-- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
-{
-    NSLog(@"didChangeAuthorizationStatus");
-    
-}
+//- (void)locationManager:(CLLocationManager *)manager didChangeAuthorizationStatus:(CLAuthorizationStatus)status
+//{
+//    NSLog(@"didChangeAuthorizationStatus");
+//    
+//}
 
 //for manaul testing
 - (void)locationManager:(CLLocationManager *)manager didStartMonitoringForRegion:(CLRegion *)region {
     NSLog(@"didStartMonitoringForRegion");
 
-    [self.locationManager startRangingBeaconsInRegion:self.beaconRegion];
+    //it will trigger 'didDetermineState' delegate
+    [self.locationManager requestStateForRegion:self.beaconRegion];
+    
+    //it will trigger 'startRangingBeaconsInRegion' delegate
+//    [self.locationManager startRangingBeaconsInRegion:self.beaconRegion];
+
 }
 
 - (void)locationManager:(CLLocationManager *)manager didEnterRegion:(CLRegion *)region {
     
-    NSLog(@"Beacon Found");
+    NSLog(@"Enter Beacons Region");
     
     [self.locationManager startRangingBeaconsInRegion:self.beaconRegion];
 }
 
 -(void)locationManager:(CLLocationManager *)manager didExitRegion:(CLRegion *)region {
-    NSLog(@"Left Region");
+    NSLog(@"Exit Beacons Region");
     
     [self.locationManager stopRangingBeaconsInRegion:self.beaconRegion];
     self.beaconFoundLabel.text = @"No";
 }
 
+- (void) locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
+{
+    NSLog(@"didDetermineState");
+    switch (state) {
+        case CLRegionStateInside:
+             NSLog(@"Region State Inside");
+            [self.locationManager startRangingBeaconsInRegion:self.beaconRegion];
+            
+            break;
+        case CLRegionStateOutside:
+            
+             NSLog(@"Region State Outside");
+            
+        case CLRegionStateUnknown:
+             NSLog(@"Region State Unknown");
+            
+        default:
+            // stop ranging beacons, etc
+            NSLog(@"Region unknown");
+    }
+}
+
+//Determining the relative distance between a beacon and a device
 -(void)locationManager:(CLLocationManager *)manager didRangeBeacons:(NSArray *)beacons inRegion:(CLBeaconRegion *)region {
     
     NSLog(@"didRangeBeacons");
     
-    if (beacons.count == 0) {
+    int beaconsCount = beacons.count ;
+    if (beaconsCount == 0) {
         NSLog(@"No beacons found nearby.");
     }else{
         
+         NSLog(@"Beacons are found: %d" ,beaconsCount);
+        
+        //
         //get one beacon
+        //
+        
         CLBeacon *beacon = [[CLBeacon alloc] init];
         beacon = [beacons lastObject];
         
+        //
+        //beacon properties data-binding
+        //
         self.beaconFoundLabel.text = @"Yes";
         
         //beacon infomation (These will change depending on what the transmitter is sending.)
         self.proximityUUIDLabel.text = beacon.proximityUUID.UUIDString;
         self.majorLabel.text = [NSString stringWithFormat:@"%@", beacon.major];
         self.minorLabel.text = [NSString stringWithFormat:@"%@", beacon.minor];
-        
         
         self.accuracyLabel.text = [NSString stringWithFormat:@"%f", beacon.accuracy];
         
@@ -120,30 +162,13 @@
         } else if (beacon.proximity == CLProximityFar) {
             self.distanceLabel.text = @"Far";
         }
+        
         //RSSI is the signal strength in decibels.
         self.rssiLabel.text = [NSString stringWithFormat:@"%i", beacon.rssi];
     }
     
    
 }
-
-- (void)locationManager:(CLLocationManager *)manager didDetermineState:(CLRegionState)state forRegion:(CLRegion *)region
-{
-    NSString *stateString = nil;
-    switch (state) {
-        case CLRegionStateInside:
-            stateString = @"inside";
-            break;
-        case CLRegionStateOutside:
-            stateString = @"outside";
-            break;
-        case CLRegionStateUnknown:
-            stateString = @"unknown";
-            break;
-    }
-    NSLog(@"State changed to %@ for region %@.", stateString, region);
-}
-
 
 -(void)locationManager:(CLLocationManager *)manager didUpdateToLocation:(CLLocation *)newLocation fromLocation:(CLLocation *)oldLocation{
     //Do nothing here, but enjoy ranging callbacks in background :-)

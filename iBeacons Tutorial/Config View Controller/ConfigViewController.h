@@ -10,6 +10,9 @@
 #import <UIKit/UIKit.h>
 
 @interface ConfigViewController : UIViewController<CBPeripheralManagerDelegate>
+{
+    bool beaconStartOnOrNot;
+}
 
 //beacon
 @property (strong, nonatomic) CLBeaconRegion *beaconRegion;
@@ -18,8 +21,13 @@
 
 //UI
 @property (weak, nonatomic) IBOutlet UITextField *uuidText;
+@property (weak, nonatomic) IBOutlet UITextField *majorText;
+@property (weak, nonatomic) IBOutlet UITextField *minorText;
+
 
 @property (weak, nonatomic) IBOutlet UILabel *statusLabel;
+@property (weak, nonatomic) IBOutlet UIButton *statusBtn;
+
 
 
 - (IBAction)transmitBeaconBtnClick:(UIButton *)sender;
